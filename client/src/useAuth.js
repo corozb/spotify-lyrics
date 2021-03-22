@@ -17,8 +17,9 @@ export const useAuth = (code) => {
         setExpriresIn(res.data.expriresIn)
         window.history.pushState({}, null, '/') // clean url
       })
-      .catch(() => {
-        window.location = '/'
+      .catch((err) => {
+        // window.location = '/'
+        console.log(err)
       })
   }, [code])
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Container, Form } from 'react-bootstrap'
 import SpotifyWebApi from 'spotify-web-api-node'
-import { TrackSearchResult } from './TrackSearchResult'
+import axios from 'axios'
 
+import Player from './Player'
+import { TrackSearchResult } from './TrackSearchResult'
 import { useAuth } from './useAuth'
 
 const spotifyApi = new SpotifyWebApi({
@@ -13,6 +15,29 @@ export const Dashboard = ({ code }) => {
   const accessToken = useAuth(code)
   const [search, setSearch] = useState('')
   const [searchResults, setSearchResults] = useState([])
+  const [playingTrack, setPlayingTrack] = useState()
+  const [lyrics, setLyrics] = useState('')
+
+  const chooseTrack = (track) => {
+    setPlayingTrack(track)
+    setSearch('')
+    setLyrics('')
+  }
+
+  useEffect(() => {
+    if (!playingTrack) return
+
+    axios
+      .get('http://localhost:3001/lyrics', {
+        params: {
+          track: playingTrack.title,
+          artist: playingTrack.artist,
+        },
+      })
+      .then((res) => {
+        setLyrics(res.data.lyrics)
+      })
+  }, [playingTrack])
 
   useEffect(() => {
     if (!accessToken) return
@@ -57,10 +82,15 @@ export const Dashboard = ({ code }) => {
       />
       <div className='flex-grow-1 my-2' style={{ overflowY: 'auto' }}>
         {searchResults.map((track) => (
-          <TrackSearchResult track={track} key={track.uri} />
+          <TrackSearchResult track={track} key={track.uri} chooseTrack={chooseTrack} />
         ))}
+        {searchResults.length === 0 && (
+          <div className='text-center' style={{ whiteSpace: 'pre' }}>
+            {lyrics}
+          </div>
+        )}
       </div>
-      <div>Bottom</div>
+      <Player accessToken={accessToken} trackUri={playingTrack?.uri} />
     </Container>
   )
 }
