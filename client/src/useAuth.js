@@ -6,8 +6,6 @@ export const useAuth = (code) => {
   const [refreshToken, setRefreshToken] = useState()
   const [expriresIn, setExpriresIn] = useState()
 
-  console.log(refreshToken)
-
   useEffect(() => {
     axios
       .post('http://localhost:3001/login', {
